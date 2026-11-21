@@ -29,9 +29,10 @@ jobs:
         run: |
           Z=""
           for f in $(find . -maxdepth 2 -name '*.zip' -not -path './.git/*'); do
-            if unzip -l "$f" | grep -q 'patch_sable_jar.py'; then Z="$f"; break; fi
+            unzip -Z1 "$f" > /tmp/zip_list.txt 2>/dev/null || continue
+            if grep -q 'patch_sable_jar.py' /tmp/zip_list.txt; then Z="$f"; break; fi
           done
-          [ -n "$Z" ] || { echo "ZIP с проектом плагина не найден в репозитории"; ls -R | head -50; exit 1; }
+          [ -n "$Z" ] || { echo "ZIP с проектом плагина не найден в репозитории"; find . -not -path './.git/*' | head -50; exit 1; }
           echo "ZIP: $Z"
           mkdir -p proj && unzip -q -o "$Z" -d proj
           G=$(find proj -name gradlew | head -n1)
@@ -106,3 +107,4 @@ jobs:
           path: |
             out/*
             sable_rapier_aarch64_android.so
+            
